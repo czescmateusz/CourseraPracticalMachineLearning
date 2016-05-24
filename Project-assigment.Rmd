@@ -1,0 +1,121 @@
+---
+title: "Practical Machine Learning Assignment"
+author: "Mateusz Pawlowski"
+date: "24th of May 2016"
+output: html_document
+---
+
+#Introduction
+
+This report is intended to document the final assignment in the Practical Machine Learning course provided by the Coursera platform. 
+
+##Project Introduction
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+
+The training data for this project are available
+[here:](https://d396qusza40orc.cloudf.trainingront.net/predmachlearn/pml-training.csv)
+
+The test data are available
+[here:](https://d396qusza40orc.cloudf.trainingront.net/predmachlearn/pml-testing.csv)
+
+
+#Goal of the analysis 
+
+The goal of the  “classe” variable in the training set, which represents the manner of the excercise.  
+
+#Getting the data
+
+```{r setup}
+#Basic info on the session
+sessionInfo()
+#Loading packages
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(RColorBrewer)
+library(rattle)
+library(randomForest)
+library(knitr)
+library(dplyr)
+
+#Downloading data
+training.d <- read.csv(url("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"), na.strings=c("NA","#DIV/0!",""))
+
+testing.d  <- read.csv(url("http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"), na.strings=c("NA","#DIV/0!",""))
+```
+
+
+```{r}
+#Split the dataset into the testing and training dataframes
+toTrain = createDataPartition(training.d$classe, p = 0.75)[[1]]
+training = training.d[toTrain,]     # select 75% of records
+testing = training.d[-toTrain,]     # keep 25% of the rest
+#Lets get a glimpse of the data
+kable((glimpse(training)))
+```
+
+#Cleaning data
+
+```{r}
+#The first 6 columns carry unnecessary information
+df.training <- training[,7:160]
+df.testing <- testing[,7:160]
+## Find columns with near zero variance and remove them
+nzv_cols <- nearZeroVar(df.training)
+if(length(nzv_cols) > 0) df.training <- df.training[, -nzv_cols]
+# Remove Columns containing missing values
+df.training <- df.training[ , colSums(is.na(df.training)) == 0]
+```
+
+#Let's build three models and compare their accuracy. 1st model is constructed using a decision tree technique
+
+```{r}
+set.seed(123456)
+dtree.model <- rpart(classe ~ ., data=df.training, method="class")
+fancyRpartPlot(dtree.model)
+pred.dtree <- predict(dtree.model, df.testing, type = "class")
+cmtree <- confusionMatrix(pred.dtree, df.testing$classe)
+cmtree
+```
+
+#A random forest model
+
+```{r}
+set.seed(12345)
+rfmodel <- randomForest(classe ~ ., data=df.training)
+pred.randomf <- predict(rfmodel, df.testing, type = "class")
+plot(rfmodel)
+cmrf <- confusionMatrix(pred.randomf, df.testing$classe)
+cmrf
+```
+
+#GBM model 
+
+```{r}
+set.seed(123456)
+t.control <- trainControl(method = "repeatedcv",
+                           number = 5,
+                           repeats = 1)
+
+gbmod <- train(classe ~ ., data=df.training, method = "gbm",
+                 trControl = t.control ,
+                 verbose = FALSE)
+
+gbmFinMod1 <- gbmod$finalModel
+
+gbmTest <- predict(gbmod, newdata=df.testing)
+gbmAccuracyTest <- confusionMatrix(gbmTest, df.testing$classe)
+gbmAccuracyTest
+```
+
+#Predicting the results
+
+As the random forest model achieved the highest level of accuracy we use it to predict the values in the testing set.
+
+```{r}
+predictionRFmodel <- predict(rfmodel, testing.d, type = "class")
+predictionRFmodel
+```
+

@@ -1,0 +1,109 @@
+This lecture is about Boosting, which
+along with random forest, is one of the most accurate out of the box
+classifiers that you can use. The basic idea here is, take a large
+number of possibly weak predictors, and we're
+going to take those possibly weak predictors, and weight them
+in a way, that takes advantage of their strengths,
+and add them up. When we weight them and add them up, we're
+sort of doing the same kind of idea that we did with
+bagging for regression trees. Or that we did with random forest, where
+we're talking a large number of classifiers and sort of
+averaging them. And then, by averaging them together, we
+get a stronger predictor. So the basic idea here is to take k
+classifiers. These come from, usually, from the same
+kind of class of classifiers. And so, some ideas might be using all possible classification trees, or all
+possible regression models. Or all possible cutoffs, where you just. Divide the data into different points. You then create a classifier that combines these classification functions together,
+and weights them together. So, alpha sub t here is a weight times the
+classifier ht of x, and so this weighted set of classifiers, gives you a prediction
+for the new point, that's our f of x. The goal here is to minimize error on the
+training set. And so this is iterative at each step we
+take, exactly one h. We calculate weights for the next step,
+based on the errors that we get from that original
+h. And then we upweight missed
+classifications, and select the next stage and move on. The most famous boosting algorithm is
+probably Adaboost, and here you can read about it on
+Wikipedia. You can also read this very nice tutorial
+on boosting here, that will also give us some of the material for the
+rest of these lecture notes. So, here's a really simple example. Suppose we're trying to separate the blue
+plus signs, from the red minus signs, and we have two variables
+to predict with. So here I plotted variable one on the
+x-axis, and variable two on the y-axis. We haven't named them because this is just
+a very simple example. And so the idea is, can we build a classifier that separates these
+variables from each other? We could start off with a really simple
+classifier. We could say just draw a line a vertical line, and say, which vertical line
+separates these points well? Here's a, a classifier that says anything
+to the left of this vertical line is a blue plus, and
+anything to the right is a red minus, and so you can
+see we've misclassified these three points up
+here in the top right. So the thing that we would do is build
+that classifier, calculate the error rate, in this case we're missing
+about 30% of the points. And then we would upweight those points
+that we missed. Here I've shown that upweighting, by
+drawing them in a larger scale. So those pluses are now upweighted, for
+building the next classifier. We would then build the next classifier. And in this case, our second classifier
+would be, one that drew a vertical line right over
+here. And so, that vertical line would classify
+everything to the right of that line as a red minus. And everything to the left, as a blue
+plus. And so here we again, misclassified three
+points, these three right here. And so, those three points are now
+upweighted, and they are also drawn larger for the next
+iteration. So we can again calculate the error rate,
+and use that to calculate the weights for the
+next step. Then the third classifier, will
+intentionally try to classify those points that we misclassified in the last
+couple of rounds. So, for example, these pluses, and these
+minuses need to be correctly classified. To do that we now draw a horizontal line, and we say anything below that horizontal
+line is a red minus, anything above is a blue plus,
+and now we misclassify this point, and these two
+points over here. So then what we can do, is we can take
+that, those classifiers, and we can weight them,
+and add them up, and so what we do is we say, we're
+going to classify a weighted combination of 0.42 times the
+ver, the first vertical line. Plus 0.65 times the second vertical line,
+plus 0.92 times the classification given by
+this horizontal line. So, what that ends up doing is, once you
+add these classification rules up together, you can see that our
+classifier works much better now. We get, to a much better classification
+when adding them up, that gets all of the blue pluses, and all of
+the red minuses together. So in each case, each of our classifiers
+was quite simple, was just a line across the plane, and so, it's
+actually quite a naive classifier. But when you weight them and add them up,
+you can get quite a strong classifier at the end
+of the day. Boosting can be done with any subset of
+classifiers. In other words, you can start with any
+sort of weak set of classifiers. In the previous example, we just used
+straight lines to separate the plain. A very large class is what's called
+gradient boosting. And you can read more about that here. R has multiple mood, boosting libraries. So they basically depend on the different kind of classification functions, and
+combination rules. Gbm package does boosting with trees. Mboost does model based boost, boosting. Ada does additive logistic regression
+boosting. And gamBoost does boosting for generalized
+additive models. Most of these are available in the caret
+package, so you can use them directly by using the train
+function with caret. So here we're going to use the wage
+example, to illustrate how you can apply a boosting
+algorithm. So here we're going to load the ISLR
+library, and the wage data. The ggplot2 library, and the caret
+library, and then we're going to, to create a wage data set that removes the predictor that we care,
+or the variable that we're trying to predict, the
+log wage variable. And we create a training set and a testing
+set. We can then model wage here this wage variable, as a function of all the
+remaining variables. That's why there's this dot here. And we can use gbm, which does boosting
+with trees, and we use verbose with a false here, because this will
+produces a lot of output when you use. Method equals gmb, if you dont' say
+verbose equals false. So when we print the model fit, you can see that there's a different numbers of
+trees that are used, and different interaction
+depths, and they're basically used together, to build a boosted version
+of regression trees. So, here I'm plotting the predicted
+results from the testing sets. So this is the using R model fit. We're predicting on the test set, versus
+the wage variable in the test set. And you can see we get a real, a
+reasonably good prediction, although there still seems to
+be a lot of variability there. But the basic idea for fitting a boosting tree a boosted algorithm in general, is to
+be, we take these weak classifiers, and
+average them together with weights, in order to get a better
+classifier. A lot of the information that I have given
+in this lecture, can be, be found in this tutorial, which also has even more in-depth information if you are
+interested. Here's a little bit more technical introduction to boosting, from Freund and
+Shapire. And then, here are several more write-ups
+about boosting and random forests these are actually
+write-ups from different prizes that have been won, using a combination of
+random forests and boosting blended together, in order to
+achieve maximal prediction accuracy.
